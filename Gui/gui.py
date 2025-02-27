@@ -9,12 +9,11 @@ class ClipboardManagerGUI(tk.Tk):
         self.title("Clipboard Manager")
         self.geometry("500x700")
 
+        self.gui_status = False
+        self.withdraw()  # Hide the window
+
         # Remove window frame (frameless)
         self.overrideredirect(True)
-
-        # Position at cursor
-        x, y = pyautogui.position()
-        self.geometry(f"+{x}+{y}")
 
         # Initialize dragging variables
         self.x_offset = 0
@@ -23,13 +22,9 @@ class ClipboardManagerGUI(tk.Tk):
         self.setup_ui()
         self.make_window_draggable()
 
-        # Start global mouse listener
-        self.mouse_listener = mouse.Listener(on_click=self.on_global_click)
-        self.mouse_listener.start()
-
     def setup_ui(self):
         """Setup UI components"""
-        ttk.Label(self, text="Clipboard History").pack(pady=5)
+        ttk.Label(self, text="Clipboard").pack(pady=5)
 
         # Frame for Listbox & Scrollbar
         frame = ttk.Frame(self)
@@ -68,12 +63,28 @@ class ClipboardManagerGUI(tk.Tk):
 
             # Check if the click is outside the window
             if not (x_root <= x <= x_root + width and y_root <= y <= y_root + height):
-                self.on_close()
+                self.hide_window()
 
-    def on_close(self):
-        """Ensure the application exits cleanly"""
+    def add_data(self, data):
+        self.listbox.insert(tk.END, data)
+
+    def get_status(self):
+        return self.gui_status
+
+    def show_window(self):
+        self.gui_status = True
+        # Start global mouse listener
+        self.mouse_listener = mouse.Listener(on_click=self.on_global_click)
+        self.mouse_listener.start()  # Start global mouse listener
+        # Position at cursor
+        x, y = pyautogui.position()
+        self.geometry(f"+{x}+{y}")
+        self.deiconify()  # Show the window
+
+    def hide_window(self):
+        self.gui_status = False
         self.mouse_listener.stop()  # Stop global mouse listener
-        self.destroy()
+        self.withdraw()  # Hide the window
 
 if __name__ == "__main__":
     app = ClipboardManagerGUI()

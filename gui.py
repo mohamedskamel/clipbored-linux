@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 import pyautogui
+import pyperclip
+import keyboard
 from pynput import mouse  
-
 class ClipboardManagerGUI(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -21,6 +22,9 @@ class ClipboardManagerGUI(tk.Tk):
 
         self.setup_ui()
         self.make_window_draggable()
+
+         # Bind double-click event
+        self.listbox.bind("<Double-1>", self.paste_selected)
 
     def setup_ui(self):
         """Setup UI components"""
@@ -65,6 +69,16 @@ class ClipboardManagerGUI(tk.Tk):
             if not (x_root <= x <= x_root + width and y_root <= y <= y_root + height):
                 self.hide_window()
 
+    def paste_selected(self, event):
+        """Pastes the selected item at the current cursor position."""
+        selected_index = self.listbox.curselection()
+        if selected_index:  # Check if an item is selected
+            selected_data = self.listbox.get(selected_index)
+            # Copy the selected data to clipboard and paste it
+            pyperclip.copy(selected_data)  # Copy to clipboard
+            keyboard.press_and_release('ctrl+v')  # Simulate Ctrl + V to paste the content where the cursor is
+            self.hide_window()  # Hide the window after pasting  
+
     def add_data(self, data):
         self.listbox.insert(tk.END, data)
 
@@ -82,10 +96,7 @@ class ClipboardManagerGUI(tk.Tk):
         self.deiconify()  # Show the window
 
     def hide_window(self):
+        self.listbox.delete(0, tk.END)  # Deletes all items from the listbox
         self.gui_status = False
         self.mouse_listener.stop()  # Stop global mouse listener
         self.withdraw()  # Hide the window
-
-if __name__ == "__main__":
-    app = ClipboardManagerGUI()
-    app.mainloop()
